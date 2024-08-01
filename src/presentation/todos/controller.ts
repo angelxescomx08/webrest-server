@@ -40,4 +40,42 @@ export class TodosController {
 
     res.status(201).json(newTodo)
   }
+
+  public updateTodo (req: Request, res: Response) {
+    const id = req.params.id
+    if(isNaN(parseInt(id))) {
+      return res.status(400).json({ error: 'Missing todo id'})
+    }
+    const todo = todos.find(todo => todo.id === parseInt(id))
+    if(!todo) {
+      return res.status(404).json({ error: 'Todo not found'})
+    }
+
+    const {text} = req.body
+
+    if(!text) {
+      return res.status(400).json({ error: 'Missing todo text'})
+    }
+
+    todo.text = text
+
+    res.json(todo)
+  }
+
+  public deleteTodo (req: Request, res: Response) {
+    const id = req.params.id
+    if(isNaN(parseInt(id))) {
+      return res.status(400).json({ error: 'Missing todo id'})
+    }
+    const todoIndex = todos.findIndex(todo => todo.id === parseInt(id))
+    if(todoIndex === -1) {
+      return res.status(404).json({ error: 'Todo not found'})
+    }
+
+    todos.splice(todoIndex, 1)
+
+    res.status(204).json({
+      message: 'Todo deleted successfully'
+    })
+  }
 }
