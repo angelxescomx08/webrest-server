@@ -22,4 +22,22 @@ export class TodosController {
     }
     res.json(todo)
   }
+
+  public createTodo (req: Request, res: Response) {
+    const {text} = req.body
+
+    if(!text) {
+      return res.status(400).json({ error: 'Missing todo text'})
+    }
+
+    const newTodo = {
+      id: todos.length + 1,
+      text,
+      createdAt: new Date()
+    }
+
+    todos.push(newTodo)
+
+    res.status(201).json(newTodo)
+  }
 }
