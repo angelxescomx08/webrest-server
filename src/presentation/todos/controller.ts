@@ -1,23 +1,26 @@
 import { Request, Response } from "express";
 import { prisma } from "../../data/postgresql";
 
-const todos = [
-  { id: 1, text: "Buy some milk", createdAt: new Date() },
-  { id: 2, text: "Pick up the kids", createdAt: new Date() },
-  { id: 3, text: "Get to work", createdAt: new Date() }
-]
-
 export class TodosController {
-  public getTodos(req: Request, res: Response) {
+  public async getTodos(req: Request, res: Response) {
+    const todos = await prisma.todo.findMany({
+      orderBy: {
+        id: 'desc'
+      }
+    })
     res.json(todos)
   }
 
-  public getTodoById(req: Request, res: Response) {
+  public async getTodoById(req: Request, res: Response) {
     const id = req.params.id
     if (isNaN(parseInt(id))) {
       return res.status(400).json({ error: 'Missing todo id' })
     }
-    const todo = todos.find(todo => todo.id === parseInt(id))
+    const todo = await prisma.todo.findUnique({
+      where: {
+        id: parseInt(id)
+      }
+    })
     if (!todo) {
       return res.status(404).json({ error: 'Todo not found' })
     }
@@ -40,41 +43,53 @@ export class TodosController {
     res.status(201).json(todo)
   }
 
-  public updateTodo(req: Request, res: Response) {
+  public async updateTodo(req: Request, res: Response) {
     const id = req.params.id
+    const { text } = req.body
     if (isNaN(parseInt(id))) {
       return res.status(400).json({ error: 'Missing todo id' })
     }
-    const todo = todos.find(todo => todo.id === parseInt(id))
-    if (!todo) {
-      return res.status(404).json({ error: 'Todo not found' })
-    }
-
-    const { text } = req.body
 
     if (!text) {
       return res.status(400).json({ error: 'Missing todo text' })
     }
 
-    todo.text = text
-
-    res.json(todo)
+    try {
+      const todo = await prisma.todo.update({
+        where: {
+          id: parseInt(id)
+        },
+        data: {
+          text
+        }
+      })
+      res.json(todo)
+    } catch (error) {
+      res.status(404).json({ message: 'Todo not found', error })
+    }
   }
 
-  public deleteTodo(req: Request, res: Response) {
+  public async deleteTodo(req: Request, res: Response) {
     const id = req.params.id
     if (isNaN(parseInt(id))) {
       return res.status(400).json({ error: 'Missing todo id' })
     }
-    const todoIndex = todos.findIndex(todo => todo.id === parseInt(id))
-    if (todoIndex === -1) {
-      return res.status(404).json({ error: 'Todo not found' })
+
+    try {
+      const todo = await prisma.todo.delete({
+        where: {
+          id: parseInt(id)
+        },
+      })
+
+      res.status(204).json({
+        message: 'Todo deleted successfully',
+        todo
+      })
+    } catch (error) {
+      res.status(404).json({ message: 'Todo not found', error })
     }
 
-    todos.splice(todoIndex, 1)
 
-    res.status(204).json({
-      message: 'Todo deleted successfully'
-    })
   }
 }
