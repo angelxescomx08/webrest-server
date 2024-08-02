@@ -1,9 +1,10 @@
 import { Request, Response } from "express";
+import { prisma } from "../../data/postgresql";
 
 const todos = [
   { id: 1, text: "Buy some milk", createdAt: new Date() },
   { id: 2, text: "Pick up the kids", createdAt: new Date() },
-  { id: 3, text: "Get to work",  createdAt: new Date()}
+  { id: 3, text: "Get to work", createdAt: new Date() }
 ]
 
 export class TodosController {
@@ -13,48 +14,46 @@ export class TodosController {
 
   public getTodoById(req: Request, res: Response) {
     const id = req.params.id
-    if(isNaN(parseInt(id))) {
-      return res.status(400).json({ error: 'Missing todo id'})
+    if (isNaN(parseInt(id))) {
+      return res.status(400).json({ error: 'Missing todo id' })
     }
     const todo = todos.find(todo => todo.id === parseInt(id))
-    if(!todo) {
-      return res.status(404).json({ error: 'Todo not found'})
+    if (!todo) {
+      return res.status(404).json({ error: 'Todo not found' })
     }
     res.json(todo)
   }
 
-  public createTodo (req: Request, res: Response) {
-    const {text} = req.body
+  public async createTodo(req: Request, res: Response) {
+    const { text } = req.body
 
-    if(!text) {
-      return res.status(400).json({ error: 'Missing todo text'})
+    if (!text) {
+      return res.status(400).json({ error: 'Missing todo text' })
     }
 
-    const newTodo = {
-      id: todos.length + 1,
-      text,
-      createdAt: new Date()
-    }
+    const todo = await prisma.todo.create({
+      data: {
+        text
+      }
+    })
 
-    todos.push(newTodo)
-
-    res.status(201).json(newTodo)
+    res.status(201).json(todo)
   }
 
-  public updateTodo (req: Request, res: Response) {
+  public updateTodo(req: Request, res: Response) {
     const id = req.params.id
-    if(isNaN(parseInt(id))) {
-      return res.status(400).json({ error: 'Missing todo id'})
+    if (isNaN(parseInt(id))) {
+      return res.status(400).json({ error: 'Missing todo id' })
     }
     const todo = todos.find(todo => todo.id === parseInt(id))
-    if(!todo) {
-      return res.status(404).json({ error: 'Todo not found'})
+    if (!todo) {
+      return res.status(404).json({ error: 'Todo not found' })
     }
 
-    const {text} = req.body
+    const { text } = req.body
 
-    if(!text) {
-      return res.status(400).json({ error: 'Missing todo text'})
+    if (!text) {
+      return res.status(400).json({ error: 'Missing todo text' })
     }
 
     todo.text = text
@@ -62,14 +61,14 @@ export class TodosController {
     res.json(todo)
   }
 
-  public deleteTodo (req: Request, res: Response) {
+  public deleteTodo(req: Request, res: Response) {
     const id = req.params.id
-    if(isNaN(parseInt(id))) {
-      return res.status(400).json({ error: 'Missing todo id'})
+    if (isNaN(parseInt(id))) {
+      return res.status(400).json({ error: 'Missing todo id' })
     }
     const todoIndex = todos.findIndex(todo => todo.id === parseInt(id))
-    if(todoIndex === -1) {
-      return res.status(404).json({ error: 'Todo not found'})
+    if (todoIndex === -1) {
+      return res.status(404).json({ error: 'Todo not found' })
     }
 
     todos.splice(todoIndex, 1)
