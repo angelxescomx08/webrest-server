@@ -24,5 +24,5 @@ NODE_ENV=
 2. Correr la base de datos con docker-compose:
 
 ```bash
-docker-compose up
+docker compose up
 ```
