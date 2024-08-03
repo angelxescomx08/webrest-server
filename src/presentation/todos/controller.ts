@@ -1,5 +1,6 @@
 import { Request, Response } from "express";
 import { prisma } from "../../data/postgresql";
+import { CreateTodoDto, UpdateTodoDto } from "../../domain/dtos";
 
 export class TodosController {
   public async getTodos(req: Request, res: Response) {
@@ -28,45 +29,44 @@ export class TodosController {
   }
 
   public async createTodo(req: Request, res: Response) {
-    const { text } = req.body
-
-    if (!text) {
-      return res.status(400).json({ error: 'Missing todo text' })
+    const [error, createTodoDto] = CreateTodoDto.create(req.body)
+    if (error) {
+      return res.status(400).json({ error })
     }
 
     const todo = await prisma.todo.create({
-      data: {
-        text
-      }
+      data: createTodoDto!
     })
 
     res.status(201).json(todo)
   }
 
   public async updateTodo(req: Request, res: Response) {
-    const id = req.params.id
-    const { text } = req.body
-    if (isNaN(parseInt(id))) {
-      return res.status(400).json({ error: 'Missing todo id' })
+    const id = +req.params.id
+    const [error, updateTodoDto] = UpdateTodoDto.create({ ...req.body, id })
+
+    if (error) {
+      return res.status(400).json({ error })
     }
 
-    if (!text) {
-      return res.status(400).json({ error: 'Missing todo text' })
+    const todo = await prisma.todo.findFirst({
+      where: {
+        id
+      }
+    })
+
+    if (!todo) {
+      return res.status(404).json({ error: 'Todo not found' })
     }
 
-    try {
-      const todo = await prisma.todo.update({
-        where: {
-          id: parseInt(id)
-        },
-        data: {
-          text
-        }
-      })
-      res.json(todo)
-    } catch (error) {
-      res.status(404).json({ message: 'Todo not found', error })
-    }
+    const updatedTodo = await prisma.todo.update({
+      where: {
+        id
+      },
+      data: updateTodoDto!.values
+    })
+    res.json(updatedTodo)
+
   }
 
   public async deleteTodo(req: Request, res: Response) {
