@@ -12,11 +12,7 @@ export class TodoDatasourceImpl extends TodoDatasource {
   }
 
   async getAll(): Promise<TodoEntity[]> {
-    const todos = await prisma.todo.findMany({
-      orderBy: {
-        id: 'desc'
-      }
-    })
+    const todos = await prisma.todo.findMany()
     return todos.map(todo => TodoEntity.fromObject(todo))
   }
 
