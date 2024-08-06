@@ -1,6 +1,7 @@
 import { Request, Response } from "express";
 import { CreateTodoDto, UpdateTodoDto } from "../../domain/dtos";
 import { TodoRepository } from '../../domain/repositories/todo.repository';
+import { CreateTodo, DeleteTodo, GetTodo, GetTodos, UpdateTodo } from "../../domain";
 
 export class TodosController {
 
@@ -9,23 +10,16 @@ export class TodosController {
   ) { }
 
   public getTodos = async (req: Request, res: Response) => {
-    try {
-      const todos = await this.todoRepository.getAll()
-      res.json(todos)
-    } catch (error) {
-      console.log(error);
-      res.status(500).json({ error })
-    }
+    new GetTodos(this.todoRepository).execute()
+      .then(todos => res.json(todos))
+      .catch(error => res.status(500).json({ error }))
   }
 
   public getTodoById = async (req: Request, res: Response) => {
     const id = +req.params.id
-    try {
-      const todo = await this.todoRepository.findById(id)
-      res.json(todo)
-    } catch (error) {
-      res.status(404).json({ error: 'Todo not found' })
-    }
+    new GetTodo(this.todoRepository).execute(id)
+      .then(todo => res.json(todo))
+      .catch(error => res.status(500).json({ error }))
   }
 
   public createTodo = async (req: Request, res: Response) => {
@@ -34,8 +28,12 @@ export class TodosController {
       return res.status(400).json({ error })
     }
 
-    const todo = await this.todoRepository.create(createTodoDto!)
-    res.status(201).json(todo)
+    new CreateTodo(this.todoRepository).execute(createTodoDto!)
+      .then(todo => res.json({
+        message: 'Todo created successfully',
+        todo
+      }))
+      .catch(error => res.status(500).json({ error }))
   }
 
   public updateTodo = async (req: Request, res: Response) => {
@@ -46,15 +44,22 @@ export class TodosController {
       return res.status(400).json({ error })
     }
 
-    const updatedTodo = await this.todoRepository.updateById(updateTodoDto!)
-    res.json(updatedTodo)
+    new UpdateTodo(this.todoRepository).execute(updateTodoDto!)
+      .then(todo => res.json({
+        message: 'Todo updated successfully',
+        todo
+      }))
+      .catch(error => res.status(500).json({ error }))
   }
 
   public deleteTodo = async (req: Request, res: Response) => {
     const id = +req.params.id
 
-    const deletedTodo = await this.todoRepository.deleteById(id)
-    res.json(deletedTodo)
+    new DeleteTodo(this.todoRepository).execute(id)
+      .then((todo) => res.json({ 
+        message: 'Todo deleted successfully', todo 
+      }))
+      .catch(error => res.status(500).json({ error }))
 
   }
 }
