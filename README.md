@@ -26,3 +26,9 @@ NODE_ENV=
 ```bash
 docker compose up
 ```
+
+3. Aplicar las migraciones:
+
+```bash
+npx prisma migrate dev --name init
+```
