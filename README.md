@@ -32,3 +32,15 @@ docker compose up
 ```bash
 npx prisma migrate dev --name init
 ```
+
+## Testing
+
+Para correr los tests se debe tener el archivo `.env.test` en la raíz del proyecto.
+
+Una vez creado el archivo, se puede correr el comando:
+
+```bash
+npm run test
+
+npm run test:watch
+```
