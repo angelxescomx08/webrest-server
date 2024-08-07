@@ -5,7 +5,7 @@ import { Server } from "../src/presentation/server";
 jest.mock("../src/presentation/server");
 
 describe("App", () => {
-  it("should work", async () => {
+  it("should run server", async () => {
     await import("../src/app");
     expect(Server).toHaveBeenCalledTimes(1);
     expect(Server).toHaveBeenCalledWith({
@@ -13,5 +13,6 @@ describe("App", () => {
       public_path: envs.PUBLIC_PATH,
       routes: expect.any(Function),
     });
+    expect(Server.prototype.start).toHaveBeenCalledTimes(1);
   });
 });
