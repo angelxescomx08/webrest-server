@@ -9,3 +9,5 @@ postgres/
 migrations/
 
 coverage/
+
+.env.test
