@@ -11,10 +11,13 @@ describe("Todos routes", () => {
     await testServer.stop();
   });
 
+  beforeEach(async () => {
+    await prisma.todo.deleteMany();
+  });
+
   const todos = [{ text: "Todo 1" }, { text: "Todo 2" }];
 
   test("should return 200 when get all todos", async () => {
-    await prisma.todo.deleteMany();
     await prisma.todo.createMany({
       data: todos,
     });
@@ -37,4 +40,24 @@ describe("Todos routes", () => {
     );
     expect(body).toHaveLength(2);
   });
+
+  test("Should return a TODO by id",async ()=>{
+    const todoCreated = await prisma.todo.create({
+      data: todos[0]
+    })
+    const { body } = await request(testServer.app)
+      .get(`/api/todos/${todoCreated.id}`)
+      .expect(200)
+    expect(body).toEqual(todoCreated)
+  })
+
+  test("Should return 500 when TODO not found",async ()=>{
+    const todoId = 99999
+    const { body } = await request(testServer.app)
+      .get(`/api/todos/${todoId}`)
+      .expect(404)
+
+    expect(body)
+    .toEqual(expect.objectContaining({error: expect.any(Object)}))
+  })
 });

@@ -19,7 +19,7 @@ export class TodosController {
     const id = +req.params.id
     new GetTodo(this.todoRepository).execute(id)
       .then(todo => res.json(todo))
-      .catch(error => res.status(500).json({ error }))
+      .catch(error => res.status(404).json({ error }))
   }
 
   public createTodo = async (req: Request, res: Response) => {
