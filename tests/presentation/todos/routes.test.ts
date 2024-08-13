@@ -85,4 +85,42 @@ describe("Todos routes", () => {
     expect(body)
     .toEqual(expect.objectContaining({error: expect.any(String)}))
   })
+
+  test("Should update a TODO",async ()=>{
+    const todoCreated = await prisma.todo.create({
+      data: todos[0]
+    })
+    const { body } = await request(testServer.app)
+      .put(`/api/todos/${todoCreated.id}`)
+      .send({text: "Updated"})
+      .expect(200)
+    expect(body)
+    .toEqual(expect.objectContaining({
+      message: "Todo updated successfully",
+      todo: expect.objectContaining({
+        text: "Updated",
+        completedAt: null,
+        id: expect.any(Number)
+      })
+    }))
+  })
+
+  test("Should delete a TODO",async ()=>{
+    
+    const todoCreated = await prisma.todo.create({
+      data: todos[0]
+    })
+    const { body } = await request(testServer.app)
+      .delete(`/api/todos/${todoCreated.id}`)
+      .expect(200)
+    expect(body)
+    .toEqual(expect.objectContaining({
+      message: "Todo deleted successfully",
+      todo: expect.objectContaining({
+        text: todos[0].text,
+        completedAt: null,
+        id: expect.any(Number)
+      })
+    }))
+  })
 });
