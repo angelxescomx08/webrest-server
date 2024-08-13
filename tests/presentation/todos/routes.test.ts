@@ -60,4 +60,29 @@ describe("Todos routes", () => {
     expect(body)
     .toEqual(expect.objectContaining({error: expect.any(Object)}))
   })
+
+  test("Should create a TODO",async ()=>{
+    const { body } = await request(testServer.app)
+      .post(`/api/todos`)
+      .send(todos[0])
+      .expect(200)
+    expect(body)
+    .toEqual(expect.objectContaining({
+      message: "Todo created successfully",
+      todo: expect.objectContaining({
+        text: todos[0].text,
+        completedAt: null,
+        id: expect.any(Number)
+      })
+    }))
+  })
+
+  test("Should not create a TODO with invalid data",async ()=>{
+    const { body } = await request(testServer.app)
+      .post(`/api/todos`)
+      .send({})
+      .expect(400)
+    expect(body)
+    .toEqual(expect.objectContaining({error: expect.any(String)}))
+  })
 });
